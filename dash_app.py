@@ -1,19 +1,18 @@
 from dash import Dash, dcc, html, Input, Output, Patch
 
+import os
 import random
 import pandas as pd
+import seaborn as sns
 from pathlib import Path
 from collections import defaultdict 
 from sklearn.manifold import MDS
-import seaborn as sns
-import os
 
 
 # bubble plot data
 data_dir = Path("./data")
 df = pd.read_csv(data_dir.joinpath("area2category_score_campus.csv"), index_col=["campus", "area_shortname", "area"])
 df_norm = df.div(df.sum(axis=1), axis=0)
-# df_norm = df.copy()
 df['category'] = df.idxmax(axis=1)
 bubble_size = 60
 font_size = 8
@@ -141,15 +140,14 @@ app.layout = html.Div(
       
       # Sidebar (right side)
       html.Div([
-        # html.H4("Click Info", style={'margin-top': '0'}),
         html.Div(id="click-info"),
       ], className="sidebar"),
     ], className="main-row"),    
   ], style={
     'width': '100vw',
     'height': '100vh',
-    'marginTop': '0px',    # Control top margin
-    'marginLeft': '15px',   # Control left margin
+    'marginTop': '0px',    
+    'marginLeft': '15px',   
     'boxSizing': 'border-box'  # Include margin in size calculation
   }
 )
@@ -195,12 +193,7 @@ def change_size(dimensions):
   w, h = dimensions
   patched = Patch()
   scale_factor = w / 1200
-  print(f"scale factor: {scale_factor:.2f} bubble size: {round(bubble_size*scale_factor)} font size: {round(font_size*scale_factor)}")
-  # # scale marker size depending on window width (w)
-  # for i in range(len(embedding_df['category'].unique())):
-  #   patched['data'][i]['marker']['size'] = bubble_size * scale_factor
-  #   patched['data'][i]['textfont']['size'] = font_size * scale_factor
-  # Only update the main scatter trace (index 0), not the legend traces
+
   patched['data'][0]['marker']['size'] = bubble_size * scale_factor
   patched['data'][0]['textfont']['size'] = font_size * scale_factor
 
@@ -213,10 +206,7 @@ def change_size(dimensions):
 )
 def update_sidebar(clickData):
   if clickData is None:
-    return []#[html.P("click on a bubble to see PIs...", 
-            #        style={"fontSize": "14px", "color": "darkslategray"}
-            #        )
-            # ]
+    return []
   
   # Extract the clicked point data
   point = clickData['points'][0]
@@ -233,11 +223,9 @@ def update_sidebar(clickData):
     # Create the info display
     info_children = [
       html.P(area, style={'margin-bottom': '10px'}),
-      # html.P(f"Category: {category}", style={'margin-bottom': '15px', 'font-style': 'italic'}),
     ]
     
     if pis:
-      # info_children.append(html.H6("Principal Investigators:", )) #style={'margin-bottom': '10px'}
       pi_links = []
       for pi in pis:
         if pi in pi2url_dict:
@@ -250,7 +238,6 @@ def update_sidebar(clickData):
       info_children.extend(pi_links)
     
     return info_children
-  
   return
 
 
