@@ -1,6 +1,4 @@
 from dash import Dash, dcc, html, Input, Output, Patch
-import plotly.express as px
-import plotly.graph_objects as go
 
 import random
 import pandas as pd
@@ -9,7 +7,6 @@ from collections import defaultdict
 from sklearn.manifold import MDS
 import seaborn as sns
 import os
-
 
 
 # bubble plot data
@@ -26,8 +23,9 @@ df['area_campus'] = df['area_shortname'] + "<br>(" + df['campus'] + ")"
 
 
 # embed score w/ MDS
-mds_seed = random.randint(0, 10000)
-print(f"mds random seed: {mds_seed}")
+# mds_seed = random.randint(0, 10000)
+# print(f"mds random seed: {mds_seed}")
+mds_seed = 2971
 embedding = MDS(n_components=2, n_init=4, random_state=mds_seed).fit_transform(df_norm)
 embedding_df = pd.DataFrame(embedding, columns=["x", "y"])
 embedding_df = (embedding_df-embedding_df.min())/(embedding_df.max()-embedding_df.min())
@@ -51,7 +49,7 @@ def bubble(width):
   embedding_df["category_color"] = embedding_df["category"].map(cat2color_dict)
   hover_text = embedding_df["area"]
 
-  fig = go.FigureWidget(
+  fig = go.Figure(
     go.Scatter(
       x=embedding_df["x"],
       y=embedding_df["y"],
@@ -69,7 +67,7 @@ def bubble(width):
       showlegend=False,
       customdata=embedding_df[["area", "category"]].values,
     )
-  ) #FigureWidget
+  ) #Figure
 
   # Add invisible traces for legend entries
   for cat in categories:
