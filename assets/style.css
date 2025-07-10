@@ -1,0 +1,52 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.main-row { 
+    display: flex; 
+    flex-direction: row; 
+    height: 100vh; 
+    width: 100vw; 
+}
+
+.sidebar {
+    flex: 1 1 2%;
+    min-width: 250px; 
+    max-width: 400px; 
+    border-left: 1px solid #eee; 
+    padding: 24px; 
+    overflow-y: auto; 
+    background-color: #f9f9f9;
+}
+
+.plot-area { 
+    flex: 3 1 80%; 
+    width: 70vw; 
+    min-width: 60vw; 
+    height: 100%; 
+    position: relative;
+}
+
+.plotly-graph-div { 
+    height: 100% !important; 
+    width: 100% !important; 
+}
+
+#bubble {
+    height: 100% !important;
+    width: 100% !important;
+}
+
+/* Disable pointer events on legend */
+.legend .traces .legendtoggle {
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+/* Remove hover effects on legend items */
+.legend .traces:hover {
+    fill-opacity: 1 !important;
+}
