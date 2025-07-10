@@ -2,8 +2,12 @@ services:
   - type: web
     name: luddy-dash-app
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      python3.10 -m pip install --upgrade pip
+      pip install -r requirements.txt
     startCommand: python dash_app.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.14
+      - key: PORT
+        value: 10000
