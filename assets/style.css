@@ -8,10 +8,9 @@ body, html {
 .main-row { 
     display: flex; 
     flex-direction: row; 
-    height: 100vh; 
+    height: 95vh; 
     width: 100vw; 
 }
-
 .sidebar {
     flex: 1 1 2%;
     min-width: 250px; 
@@ -21,7 +20,6 @@ body, html {
     overflow-y: auto; 
     background-color: #f9f9f9;
 }
-
 .plot-area { 
     flex: 3 1 80%; 
     width: 70vw; 
@@ -29,15 +27,61 @@ body, html {
     height: 100%; 
     position: relative;
 }
-
 .plotly-graph-div { 
     height: 100% !important; 
     width: 100% !important; 
 }
-
 #bubble {
     height: 100% !important;
     width: 100% !important;
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+.button-row button {
+    margin-bottom: 10px;
+    margin-right: 5px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+.button-row button:hover {
+    background-color: #e9e9e9;
+}
+.button-row button:last-child {
+    margin-right: 0;
+}
+
+.table-row { 
+    display: flex; 
+    flex-direction: row; 
+    width: 100vw; 
+}
+.dummy_sidebar {
+    flex: 1 1 2%;
+    min-width: 250px; 
+    max-width: 400px; 
+    border-left: 1px solid #eee; 
+    padding: 24px; 
+    overflow-y: auto; 
+    background-color: #f9f9f9;
+}
+.editable-table-container { 
+    flex: 3 1 80%; 
+    width: 70vw; 
+    min-width: 60vw; 
+    height: 100%; 
+    position: relative;
+}
+
+/* Add smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+/* Auto-scroll trigger - this is a hack but it works */
+#table-container {
+    scroll-margin-top: 20px;
 }
 
 /* Disable pointer events on legend */
