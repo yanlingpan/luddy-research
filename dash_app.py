@@ -393,7 +393,7 @@ app.clientside_callback(
         return window.dash_clientside.no_update
     }
     """,
-    Output("dummy", "style"),
+    Output("dummy", "style"), # !!do not allow_duplicate, do not prevent_initial_call!!
     Input("dummy", "style"),
 )
 
