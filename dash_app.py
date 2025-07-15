@@ -13,8 +13,7 @@ from data_processor import DataProcessor
 
 # bubble plot data
 data_dir = Path("./data")
-data_processor = DataProcessor(data_dir.joinpath("area2category_score_campus.csv"), 
-                               mds_seed=2971) # mds_seed need to be int
+data_processor = DataProcessor(data_dir.joinpath("area2category_score_campus.csv"), mds_seed=2971) # mds_seed need to be int
 df = data_processor.df_original
 embedding_df = data_processor.embedding_df
 categories = data_processor.categories
@@ -270,7 +269,7 @@ def func(n_clicks):
   prevent_initial_call=True,
 )
 def func(n_clicks):
-  cols2include = pd.read_csv("area2category_score_campus.csv").columns.tolist()
+  cols2include = pd.read_csv(data_dir.joinpath("area2category_score_campus.csv")).columns.tolist()
   df_curr = data_processor.df_current[cols2include]
   return dcc.send_data_frame(df_curr.to_csv, "area2category_score_campus_current.csv", index=False)
 
