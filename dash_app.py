@@ -260,7 +260,7 @@ app.layout = html.Div(
   prevent_initial_call=True,
 )
 def func(n_clicks):
-  return dcc.send_file("./area2category_score_campus.csv")
+  return dcc.send_file(data_dir.joinpath("area2category_score_campus.csv"))
 
 
 # download current table as CSV
