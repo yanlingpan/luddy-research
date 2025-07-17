@@ -1,8 +1,8 @@
 from dash import Dash, dcc, html, Input, Output, Patch, State, dash_table, no_update
-from dash.dependencies import Input, Output
+import io, os
+import base64
 import plotly.graph_objects as go
 
-import os
 import pandas as pd
 import seaborn as sns
 from pathlib import Path
@@ -10,10 +10,9 @@ from collections import defaultdict
 
 from data_processor import DataProcessor
 
-
 # bubble plot data
 data_dir = Path("./data")
-data_processor = DataProcessor(data_dir.joinpath("area2category_score_campus.csv"), mds_seed=2971) # mds_seed need to be int
+data_processor = DataProcessor(data_dir.joinpath("area2category_score_campus.csv"),  mds_seed=2971) # mds_seed need to be int
 df = data_processor.df_original
 embedding_df = data_processor.embedding_df
 categories = data_processor.categories
@@ -30,8 +29,7 @@ pi2url_df = area2pi2url[['pi', 'url']].drop_duplicates()
 pi2url_dict = pi2url_df.set_index('pi')['url'].to_dict()
 
 
-
-def bubble(width):
+def bubble(width=1200, data=None):
   # colors = ["blue", "green", "red", "orange", "purple", "gray", "brown", ]
   colors = sns.color_palette("tab10", n_colors=10).as_hex()
   cat2color_dict = dict(zip(embedding_df["category"].unique(), colors))
@@ -39,7 +37,7 @@ def bubble(width):
   embedding_df["category_color"] = embedding_df["category"].map(cat2color_dict)
   hover_text = embedding_df["area"]
 
-  fig = go.Figure(
+  fig = go.FigureWidget(
     go.Scatter(
       x=embedding_df["x"],
       y=embedding_df["y"],
@@ -57,7 +55,7 @@ def bubble(width):
       showlegend=False,
       customdata=embedding_df[["area", "category"]].values,
     )
-  ) #Figure
+  ) #FigureWidget
 
   # Add invisible traces for legend entries
   for cat in categories:
@@ -204,7 +202,7 @@ app.layout = html.Div(
       dcc.Download(id="download-orig-table"),
       
       dcc.Upload(
-        html.Button("upload score table (not implemented yet)", id="btn-upload",),
+        html.Button("upload score table", id="btn-upload",),
         id="upload-table"
       ),
     ], className="button-row", style={'display': 'flex', 'flex-wrap': 'wrap'}),
@@ -251,6 +249,77 @@ app.layout = html.Div(
   },
   
 )
+
+# upload
+def parse_contents(contents, filename, date):
+  content_type, content_string = contents.split(',')
+  decoded = base64.b64decode(content_string)
+  try:
+    if 'csv' in filename:
+      # Assume that the user uploaded a CSV file
+      df = pd.read_csv(
+        io.StringIO(decoded.decode('utf-8')))
+    elif 'xls' in filename:
+      # Assume that the user uploaded an excel file
+      df = pd.read_excel(io.BytesIO(decoded))
+  except Exception as e:
+    print(e)
+    return html.Div([
+      'There was an error processing this file.'
+    ])
+
+  return df
+
+
+@app.callback(
+  [Output('editable-table', 'data', allow_duplicate=True),
+   Output("bubble", "figure", allow_duplicate=True)],
+  Input('editable-table', 'data_timestamp'),
+  [State('editable-table', 'data'),
+   State('dimensions', 'data')],
+  prevent_initial_call=True
+)
+def update_table_and_graph(data_timestamp, current_data, dimensions=None):  
+  # Re-embed with MDS using the updated data
+  global embedding_df
+  embedding_df = data_processor.update_from_table_data(current_data)
+  
+  # Create new bubble plot with updated data
+  new_figure = bubble(1200)
+  if dimensions is not None:
+    w, h = dimensions
+    scale_factor = w / 1200
+    new_figure['data'][0]['marker']['size'] = bubble_size * scale_factor
+    new_figure['data'][0]['textfont']['size'] = font_size * scale_factor
+  return current_data, new_figure
+
+
+@app.callback(
+  [Output('editable-table', 'data', allow_duplicate=True),
+   Output("bubble", "figure", allow_duplicate=True)],
+  Input('upload-table', 'contents'),
+  State('upload-table', 'filename'),
+  State('upload-table', 'last_modified'),
+  State('editable-table', 'data'),
+  State('dimensions', 'data'),
+  prevent_initial_call=True
+)
+def update_table(content, name, date, current_data, dimensions=None):
+  if content is not None:
+    upload_df = parse_contents(content, name, date)
+    global embedding_df
+    embedding_df = data_processor.update_from_upload(upload_df)
+    
+    # Create new bubble plot with updated data
+    new_figure = bubble(1200)
+    if dimensions is not None:
+      w, h = dimensions
+      scale_factor = w / 1200
+      new_figure['data'][0]['marker']['size'] = bubble_size * scale_factor
+      new_figure['data'][0]['textfont']['size'] = font_size * scale_factor
+    
+    current_data = data_processor.df_current.to_dict('records')
+    return current_data, new_figure
 
 # download original table as CSV
 @app.callback(
@@ -338,28 +407,7 @@ def change_mds_seed(n_clicks, dimensions=None):
   return new_figure, str(data_processor.mds_seed)
 
 
-@app.callback(
-  [Output('editable-table', 'data'),
-   Output("bubble", "figure", allow_duplicate=True)],
-  Input('editable-table', 'data_timestamp'),
-  [State('editable-table', 'data'),
-   State('dimensions', 'data')],
-  prevent_initial_call=True
-)
-def update_table_and_graph(data_timestamp, current_data, dimensions=None):  
-  # Re-embed with MDS using the updated data
-  global embedding_df
-  embedding_df = data_processor.update_from_table_data(current_data)
-  
-  # Create new bubble plot with updated data
-  new_figure = bubble(1200)
-  if dimensions is not None:
-    w, h = dimensions
-    scale_factor = w / 1200
-    new_figure['data'][0]['marker']['size'] = bubble_size * scale_factor
-    new_figure['data'][0]['textfont']['size'] = font_size * scale_factor
-  
-  return current_data, new_figure
+
 
 
 # Toggle table visibility
@@ -392,7 +440,7 @@ app.clientside_callback(
         return window.dash_clientside.no_update
     }
     """,
-    Output("dummy", "style"), # !!do not allow_duplicate, do not prevent_initial_call!!
+    Output("dummy", "style"), # do not allow_duplicate, do not prevent_initial_call
     Input("dummy", "style"),
 )
 
@@ -480,7 +528,6 @@ def update_sidebar(clickData):
     return info_children
   
   return
-
 
 if __name__ == "__main__":
   port = int(os.environ.get('PORT', 8050))

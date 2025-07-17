@@ -19,20 +19,24 @@ class DataProcessor:
     
   def _load_data(self, csv_path):
     """Load and prepare the initial dataframe"""
-    df = pd.read_csv(Path(csv_path), index_col=["campus", "area_shortname", "area"])
+    df = pd.read_csv(Path(csv_path)) #, index_col=["campus", "area_shortname", "area"]
+    df = self._process_loaded_df(df)
+    return df
+  
+  def _process_loaded_df(self, df):
+    df = df.set_index(["campus", "area_shortname", "area"])
     df['category'] = df.idxmax(axis=1)
     df = df.reset_index()
     df['size'] = self.bubble_size
     df['area_campus'] = df['area_shortname'] + "<br>(" + df['campus'] + ")"
     df = df.sort_values(by=['campus', 'area_shortname'])
-    
     return df
   
   def _compute_embedding(self, df, mds_seed=None):
     """Compute MDS embedding from dataframe"""
+    
     if all(col in df.columns for col in ["campus", "area_shortname", "area"]):
       df = df.set_index(["campus", "area_shortname", "area"])
-
     # Get score columns only
     score_columns = [col for col in df.columns if col in self.categories]
     df_scores = df[score_columns]
@@ -60,7 +64,18 @@ class DataProcessor:
     updated_df = pd.DataFrame(table_data)
     self.df_current = updated_df.copy()
     self.embedding_df = self._compute_embedding(updated_df)
-    print(f"original\n{self.df_original.head()}\ncurrent\n{self.df_current.head()}")
+
+    return self.embedding_df
+  
+  def update_from_upload(self, upload_df):
+    """Update current dataframe from uploaded data"""
+    if isinstance(upload_df, pd.DataFrame):
+      uploaded_df = self._process_loaded_df(upload_df)
+      self.df_current = upload_df.copy()
+    else:
+      print("Invalid upload data format. Expected a DataFrame.")
+    
+    self.embedding_df = self._compute_embedding(uploaded_df)
     return self.embedding_df
   
   def update_from_mds_seed(self, mds_seed=None):
