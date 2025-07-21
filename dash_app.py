@@ -37,7 +37,7 @@ def bubble(width=1200, data=None):
   embedding_df["category_color"] = embedding_df["category"].map(cat2color_dict)
   hover_text = embedding_df["area"]
 
-  fig = go.FigureWidget(
+  fig = go.Figure(
     go.Scatter(
       x=embedding_df["x"],
       y=embedding_df["y"],
@@ -55,7 +55,7 @@ def bubble(width=1200, data=None):
       showlegend=False,
       customdata=embedding_df[["area", "category"]].values,
     )
-  ) #FigureWidget
+  ) #Figure
 
   # Add invisible traces for legend entries
   for cat in categories:
