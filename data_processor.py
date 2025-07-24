@@ -43,7 +43,6 @@ class DataProcessor:
     df_scores = df[score_columns]
     df_scores = df_scores.apply(pd.to_numeric, errors='coerce')
     df_norm = df_scores.div(df_scores.sum(axis=1), axis=0)
-    print(df_scores.head())
     
     # MDS embedding
     if mds_seed is not None:

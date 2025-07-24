@@ -215,6 +215,8 @@ app.layout = html.Div(
           # page_size=10,
           fixed_rows={'headers': True},
           fixed_columns={'headers': True, 'data': 2},
+          sort_action="native",
+          sort_mode="multi",
           style_table={
             'height': '350px',
             # 'overflowX': 'auto', 
