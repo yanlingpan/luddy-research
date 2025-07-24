@@ -25,6 +25,7 @@ class DataProcessor:
   
   def _process_loaded_df(self, df):
     df = df.set_index(["campus", "area_shortname", "area"])
+    df = df.astype(int)
     df['category'] = df.idxmax(axis=1)
     df = df.reset_index()
     df['size'] = self.bubble_size
@@ -42,6 +43,7 @@ class DataProcessor:
     df_scores = df[score_columns]
     df_scores = df_scores.apply(pd.to_numeric, errors='coerce')
     df_norm = df_scores.div(df_scores.sum(axis=1), axis=0)
+    print(df_scores.head())
     
     # MDS embedding
     if mds_seed is not None:
@@ -67,11 +69,12 @@ class DataProcessor:
 
     return self.embedding_df
   
-  def update_from_upload(self, upload_df):
+  def update_from_upload(self, uploaded_df):
     """Update current dataframe from uploaded data"""
-    if isinstance(upload_df, pd.DataFrame):
-      uploaded_df = self._process_loaded_df(upload_df)
-      self.df_current = upload_df.copy()
+    if isinstance(uploaded_df, pd.DataFrame):
+      uploaded_df = self._process_loaded_df(uploaded_df)
+      self.df_current = uploaded_df.copy()
+      self.categories = sorted(self.df_current["category"].unique())
     else:
       print("Invalid upload data format. Expected a DataFrame.")
     
