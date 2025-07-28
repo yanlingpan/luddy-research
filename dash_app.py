@@ -297,6 +297,7 @@ def update_table_and_graph(data_timestamp, current_data, dimensions=None):
 
 @app.callback(
   [Output('editable-table', 'data', allow_duplicate=True),
+   Output('editable-table', 'columns', allow_duplicate=True),  # Add this line
    Output("bubble", "figure", allow_duplicate=True)],
   Input('upload-table', 'contents'),
   State('upload-table', 'filename'),
@@ -320,7 +321,9 @@ def update_table(content, name, date, current_data, dimensions=None):
       new_figure['data'][0]['textfont']['size'] = font_size * scale_factor
     
     current_data = data_processor.df_current.to_dict('records')
-    return current_data, new_figure
+    new_columns = [{"name": i, "id": i} for i in data_processor.df_current.columns if i not in editable_table_exclude_cols]
+
+    return current_data, new_columns, new_figure
 
 # download original table as CSV
 @app.callback(
