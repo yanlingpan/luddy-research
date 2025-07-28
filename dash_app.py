@@ -93,7 +93,7 @@ def bubble(width=1200, data=None):
         x=1, xanchor="right", xref="paper",
         y=0.96, yanchor="top", yref="container",
         bgcolor="rgba(0,0,0,0)", # Transparent background
-        entrywidthmode='fraction', entrywidth=.2,
+        entrywidthmode='fraction', entrywidth=0.3,
         itemclick=False, itemdoubleclick=False, # disable legend interactivity
         font=dict(color="darkslategray"),
       ),
@@ -209,8 +209,8 @@ app.layout = html.Div(
     html.Div([
       html.Div([dash_table.DataTable( # make score table editable
           id='editable-table',
-          data=df.to_dict('records'),
-          columns=[{"name": i, "id": i} for i in df.columns if i not in editable_table_exclude_cols],
+          data=data_processor.df_current.to_dict('records'),
+          columns=[{"name": i, "id": i} for i in data_processor.df_current.columns if i not in editable_table_exclude_cols],
           editable=True,
           # page_size=10,
           fixed_rows={'headers': True},
@@ -219,22 +219,21 @@ app.layout = html.Div(
           sort_mode="multi",
           style_table={
             'height': '350px',
-            # 'overflowX': 'auto', 
-            # 'overflowY': 'auto',
+            'overflowX': 'auto', 
+            'overflowY': 'auto',
             'minWidth': '80%',
             'maxWidth': '100%'
           },
-          style_data_conditional=[
-            {'if': {'column_id': 'campus'},
-            'width': '50px', 'textAlign': 'right'},
-            {'if': {'column_id': 'area_shortname'},
-            'width': '140px', 'textAlign': 'left'},
-          ],
           style_header={'textAlign': 'center'},
           style_cell_conditional=[{'if': {'column_id': c},
                'textAlign': 'center',
                'minWidth': '100px', 'width': '100px', 'maxWidth': '100px',
-               } for c in categories
+               } for c in data_processor.categories
+          ] + [
+            {'if': {'column_id': 'campus'},
+            'width': '50px', 'textAlign': 'right'},
+            {'if': {'column_id': 'area_shortname'},
+            'width': '140px', 'textAlign': 'left'},
           ],
         ),
       ], className="editable-table-container"),
