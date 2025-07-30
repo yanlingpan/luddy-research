@@ -126,6 +126,27 @@ app.layout = html.Div(
           },
           responsive=True,
         ),
+        # Dropdown positioned at top right
+        html.Div([
+          dcc.Dropdown(
+            id='canpus-dropdown',
+            options=[{"label": "IUB / IUI", "value":'IUB/IUI'}, 
+                     {"label": "IUB", "value":'IUB'}, 
+                     {"label": "IUI", "value":'IUI'}],
+            value='IUB/IUI',  # default 
+            # title='select campus',
+            clearable=False,
+            style={
+              'width': '94px',
+              'font-size': '12px'
+            }
+          ),
+        ], style={
+          'position': 'absolute',
+          'top': '10px',
+          'right': '10px',
+          'z-index': '1000'
+        }),
         html.Div([
           # mds input box
           html.Div([
@@ -250,6 +271,34 @@ app.layout = html.Div(
   },
   
 )
+
+# Campus dropdown handler
+@app.callback(
+  [Output("bubble", "figure", allow_duplicate=True),
+   Output('editable-table', 'data', allow_duplicate=True),
+   Output('editable-table', 'columns', allow_duplicate=True)],
+  Input('canpus-dropdown', 'value'),
+  State('dimensions', 'data'),
+  prevent_initial_call=True
+)
+def update_campus_filter(campus_value, dimensions=None):
+  # Update data processor with new campus filter
+  global embedding_df
+  embedding_df = data_processor.update_from_dropdown(campus_value)
+  
+  # Create new bubble plot with updated data
+  new_figure = bubble(1200)
+  if dimensions is not None:
+    w, h = dimensions
+    scale_factor = w / 1200
+    new_figure['data'][0]['marker']['size'] = bubble_size * scale_factor
+    new_figure['data'][0]['textfont']['size'] = font_size * scale_factor
+  
+  # Update table data and columns
+  current_data = data_processor.df_current.to_dict('records')
+  new_columns = [{"name": i, "id": i} for i in data_processor.df_current.columns if i not in editable_table_exclude_cols]
+  
+  return new_figure, current_data, new_columns
 
 # upload
 def parse_contents(contents, filename, date):

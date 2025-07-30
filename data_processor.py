@@ -14,6 +14,7 @@ class DataProcessor:
     # Load and process initial data
     self.df_original = self._load_data(csv_path)
     self.df_current = self.df_original.copy()
+    self.df_current_allcampus = self.df_current.copy()
     self.categories = sorted(self.df_original["category"].unique())
     self.embedding_df = self._compute_embedding(self.df_current)
     
@@ -64,6 +65,7 @@ class DataProcessor:
     """Update embedding from edited table data"""
     updated_df = pd.DataFrame(table_data)
     self.df_current = updated_df.copy()
+    self.df_current_allcampus = self.df_current.copy()
     self.embedding_df = self._compute_embedding(updated_df)
 
     return self.embedding_df
@@ -73,6 +75,7 @@ class DataProcessor:
     if isinstance(uploaded_df, pd.DataFrame):
       uploaded_df = self._process_loaded_df(uploaded_df)
       self.df_current = uploaded_df.copy()
+      self.df_current_allcampus = self.df_current.copy()
       self.categories = sorted(self.df_current["category"].unique())
     else:
       print("Invalid upload data format. Expected a DataFrame.")
@@ -85,4 +88,14 @@ class DataProcessor:
     if mds_seed is None:
       mds_seed = random.randint(0, 10000)
     self.embedding_df = self._compute_embedding(self.df_current, mds_seed)
+    return self.embedding_df
+  
+  def update_from_dropdown(self, campus):
+    """Filter current dataframe based on selected campus"""
+    if campus == 'IUB/IUI':
+      self.df_current = self.df_current_allcampus.copy()
+    else:
+      self.df_current = self.df_current_allcampus[self.df_current_allcampus['campus'].isin(['IUB/IUI', campus])].copy()
+    
+    self.embedding_df = self._compute_embedding(self.df_current)
     return self.embedding_df
