@@ -134,14 +134,15 @@ app.layout = html.Div(
                      {"label": "IUB", "value":'IUB'}, 
                      {"label": "IUI", "value":'IUI'}],
             value='IUB/IUI',  # default 
-            # title='select campus',
             clearable=False,
             style={
               'width': '94px',
               'font-size': '12px'
             }
           ),
-        ], style={
+        ], 
+        title='select campus',
+        style={
           'position': 'absolute',
           'top': '10px',
           'right': '10px',
